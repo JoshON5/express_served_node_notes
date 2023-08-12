@@ -1,6 +1,7 @@
 const note = require('express').Router();
 const { readFromFile, readAndAppend } = require('../helpers/fsUtils');
 const { v4: uuidv4 } = require('uuid');
+const db = require('../db/notes.json')
 
 note.get('/', (req, res) => {
     readFromFile('./db/notes.json').then((data) => res.json(JSON.parse(data)));
@@ -24,12 +25,12 @@ note.post('/', (req, res) => {
 });
 
 note.delete('/:id', (req, res) => {
-    const { text_id } = req.body
+     if (req.params.text_id) {
 
-    if (req.body) {
-        const newNote = {};
-
-        readAndAppend(newNote, './db/notes.json');
+        const newDb = db.filter((note) => 
+        note.text_id !== req.params.text_id
+    )
+        readAndAppend(newDb, './db/notes.json');
         res.json(`Note cleared! Congratualations!`)
     } else {
         res.errored('Please choose an id of an existing note to delete')
