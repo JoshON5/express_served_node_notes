@@ -23,4 +23,17 @@ note.post('/', (req, res) => {
     }
 });
 
+note.delete('/:id', (req, res) => {
+    const { text_id } = req.body
+
+    if (req.body) {
+        const newNote = {};
+
+        readAndAppend(newNote, './db/notes.json');
+        res.json(`Note cleared! Congratualations!`)
+    } else {
+        res.errored('Please choose an id of an existing note to delete')
+    }
+})
+
 module.exports = note;
