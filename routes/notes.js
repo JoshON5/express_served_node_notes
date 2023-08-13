@@ -1,7 +1,6 @@
 const note = require('express').Router();
-const { readFromFile, readAndAppend } = require('../helpers/fsUtils');
+const { readFromFile, readAndAppend, writeToFile } = require('../helpers/fsUtils');
 const { v4: uuidv4 } = require('uuid');
-const db = require('../db/notes.json')
 
 note.get('/', (req, res) => {
     readFromFile('./db/notes.json').then((data) => res.json(JSON.parse(data)));
@@ -14,27 +13,25 @@ note.post('/', (req, res) => {
         const newNote = {
             title,
             text,
-            text_id: uuidv4(),
+            id: uuidv4(),
         };
 
         readAndAppend(newNote, './db/notes.json');
         res.json(`New Note! New Goals!`);
     } else {
-        res.errored('Too bad we could not make a note to fix this error :/')
+        res.error('Too bad we could not make a note to fix this error :/')
     }
 });
 
 note.delete('/:id', (req, res) => {
-     if (req.params.text_id) {
+    const noteId = req.params.id;
+    readFromFile('./db/notes.json').then((data) => JSON.parse(data)).then(json => {
+        const newDb = json.filter((note) => note.id !== noteId);
 
-        const newDb = db.filter((note) => 
-        note.text_id !== req.params.text_id
-    )
-        readAndAppend(newDb, './db/notes.json');
-        res.json(`Note cleared! Congratualations!`)
-    } else {
-        res.errored('Please choose an id of an existing note to delete')
-    }
+        writeToFile('./db/notes.json', newDb);
+
+        res.json(`Note ${noteId} has been deleted! Congratualations!`)
+    })
 })
 
 module.exports = note;
